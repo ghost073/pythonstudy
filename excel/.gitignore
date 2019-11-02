@@ -1,0 +1,7 @@
+/.idea/
+.DS_Store
+Excel*
+__pycache__
+build
+dist
+tj.spec

@@ -37,9 +37,9 @@ class myui(tjui.MyFrame1):
 	def toexcel( self, event ):
 		filename = self.infilename.GetValue()
 		# 读取表格信息
-		excel_res = self.read_excel(filename)
+		excel_res = self.readExcel(filename)
 		# 格式化表格信息
-		table_list = self.format_table(excel_res[0], excel_res[1])
+		table_list = self.formatTjTable(excel_res[0], excel_res[1])
 
 		ws_title = [
 			{'value':'科目', 'field':'kemu'},
@@ -64,19 +64,72 @@ class myui(tjui.MyFrame1):
 			{'value':'10分以下', 'field':'fen10xia'},
 			{'value':'最低分数', 'field':'minscore'},
 		]
+
+		# 创建sheet
+		outfilename_val = self.createSheet()
+
 		# 写入表格数据
-		outfilename_val = self.writeExcel(ws_title,table_list)
+		self.writeDataExcel(excel_res[0], excel_res[1])
+		# 写入表格统计
+		self.writeTjExcel(ws_title,table_list)
+		# 保存
+		self.saveExcel(outfilename_val)
+
 		self.outfilename.SetValue(outfilename_val)
 			
-	# 写excel
-	def writeExcel(self, titlelist, datalist):
+	# 创建sheet
+	def createSheet(self):
 		# 获取文件路径
 		nameTime = time.strftime('%Y-%m-%d_%H-%M-%S')
 		excelName = 'Excel' + nameTime + '.xlsx'
 		ExcelFullName = os.path.join(os.getcwd(), excelName)
+		
+		self.wb = Workbook()
+		self.ws1 = self.wb.create_sheet(title="成绩", index=0)
+		self.ws2 = self.wb.create_sheet(title="统计", index=1)
 
-		wb = Workbook()
-		ws = wb.active
+		return ExcelFullName
+
+	# 保存sheet
+	def saveExcel(self, fullname):
+		self.wb.save(filename=fullname)
+		return True
+
+	# 写数据sheet
+	def writeDataExcel(self, titlelist, datalist):
+		ws = self.ws1
+
+		# 写入标题
+		for k,v in enumerate(titlelist):
+			c = k + 1
+			ws.cell(row=1, column=c).value = v
+
+		# 组装excel 要append的数据
+		dataformat = []
+		# 列的长度
+		max_col = len(datalist[titlelist[0]]['values'])
+
+		zongchengji_title = '总成绩'
+		# 追加总成绩列,excel,title,datalist都需要修改
+		ws.cell(row=1, column=len(titlelist)+1).value = zongchengji_title
+		titlelist.append(zongchengji_title)
+		datalist.update({zongchengji_title:{'values':datalist[titlelist[0]]['zongchengji']}})
+
+		for i in range(max_col):
+			data_tmp = []
+			for titlev in titlelist:
+				data_tmp.append(datalist[titlev]['values'][i])
+			dataformat.append(data_tmp)
+
+		# 追加excel表数据
+		for datav in dataformat:
+			ws.append(datav)
+		return True	
+
+	# 写统计sheet
+	def writeTjExcel(self, titlelist, datalist):
+
+		ws = self.ws2
 
 		for k,v in enumerate(titlelist):
 			c = k + 1
@@ -93,9 +146,7 @@ class myui(tjui.MyFrame1):
 		# 追加excel表数据
 		for datav in dataformat:
 			ws.append(datav)
-		
-		wb.save(filename=ExcelFullName)
-		return ExcelFullName		
+		return True	
 
 	""" 
 	班级	在籍人数	参考人数	
@@ -104,7 +155,7 @@ class myui(tjui.MyFrame1):
 	59~50	49~40	39~30	29~20	19~10	10分以下	最低分数
 	"""
 	# 分段人数统计
-	def fenduan_people(self, fenshu_list, people_num):
+	def fenduanPeople(self, fenshu_list, people_num):
 		res = {'fen100':0,'fen90_99':0,'fen89_85':0,'fen84_80':0,'fen79_70':0,'fen69_60':0,'fen59_50':0,'fen49_40':0,'fen39_30':0,'fen29_20':0,'fen19_10':0, 'fen10xia':0,'jige':0,'youxiu':0,'difen':0, 'jigelv':0, 'youxiulv':0, 'difenlv':0}
 
 		for i in fenshu_list:
@@ -149,7 +200,7 @@ class myui(tjui.MyFrame1):
 		return res
 
 	# 读取统计表格
-	def read_excel(self, filename):
+	def readExcel(self, filename):
 
 		wb = load_workbook(filename)
 		sheet_names = wb.get_sheet_names()
@@ -202,8 +253,8 @@ class myui(tjui.MyFrame1):
 			
 		return (title_arr, result)
 
-	# 格式化表格数据
-	def format_table(self, title_arr, result):
+	# 格式化统计表格数据
+	def formatTjTable(self, title_arr, result):
 		# 数据表格
 		table_list = []
 		# 总人数 
@@ -220,8 +271,8 @@ class myui(tjui.MyFrame1):
 			v['avgscore'] = round(v['zongfenscore']/people_all, 2)
 			v['minscore'] = min(v['values'])
 			# 各分段人数
-			fenduan_people_list = self.fenduan_people(v['values'], people_all)
-			v.update(fenduan_people_list)
+			fenduanPeople_list = self.fenduanPeople(v['values'], people_all)
+			v.update(fenduanPeople_list)
 			table_list.append(v)
 
 		return table_list
