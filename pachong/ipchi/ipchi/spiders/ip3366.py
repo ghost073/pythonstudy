@@ -28,7 +28,7 @@ class Ip3366Spider(scrapy.Spider):
     }
 
     def parse(self, response):
-        if self.page >= 100:
+        if self.page >= 10:
             self.crawler.engine.close_spider(self, 'response msg error %s, job done!'.format('ok'))
 
         self.page += 1

@@ -116,7 +116,7 @@ class Proxy(object):
 
             # 访问百度验证代理状态
             try:
-                if requests.get('https://www.baidu.com/', proxies=proxies, timeout=2).status_code == 200:
+                if requests.get('http://httpbin.org/ip', proxies=proxies, timeout=2).status_code == 200:
                     success_queue.put(proxy['id'])
             except:
                 fail_queue.put(proxy['id'])
