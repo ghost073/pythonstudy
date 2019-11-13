@@ -22,3 +22,6 @@ scrapy crawl ip3366
 
 python composer pip
 https://pypi.org/project/sqlite3dbm/
+
+
+用户池，ip代理池， user-agent池
