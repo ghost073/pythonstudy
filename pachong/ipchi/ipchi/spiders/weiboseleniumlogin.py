@@ -38,7 +38,7 @@ class WeiboseleniumloginSpider(scrapy.Spider):
             'Connection': 'keep-alive',
         },
         "DOWNLOADER_MIDDLEWARES": {
-            'ipchi.middlewares.SeleniumMiddleware': 543,
+            'ipchi.middlewares.SeleniumFirfoxMiddleware': 543,
             # 将scrapy默认的user-agent中间件关闭
             #'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
         },
